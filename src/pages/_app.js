@@ -9,10 +9,12 @@ import {
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import { mainnet, polygon, optimism, arbitrum, optimismGoerli } from 'wagmi/chains';
+import { mainnet, polygon, optimism, arbitrum, optimismGoerli, sepolia } from 'wagmi/chains';
+import { InjectedConnector } from 'wagmi/connectors/injected'
+import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 
-const { chains, publicClient } = configureChains(
-  [mainnet, polygon, optimism, arbitrum,optimismGoerli],
+const { chains, publicClient,  webSocketPublicClient } = configureChains(
+  [mainnet, polygon, optimism, arbitrum,optimismGoerli, sepolia],
   [
     // alchemyProvider({ apiKey: process.env.ALCHEMY_ID }),
     publicProvider()

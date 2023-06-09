@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 const MainSection = () => {
     return (
         <>
-        <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-slate-500">
+        <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-slate-30">
             <div className="text-center">
                 <h1 className="text-3xl font-bold mb-2">Welcome to Tiempos de Arepa</h1>
                 <p className="text-lg text-gray-600">Here is some text about what we do.</p>
