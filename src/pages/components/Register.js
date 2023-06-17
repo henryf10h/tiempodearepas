@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { readContract, prepareWriteContract, writeContract  } from '@wagmi/core';
 import { useRouter } from 'next/router';
 import abi from '../../contract-abi.json';
 import abi1 from '../../contract-abi1.json';
 import { NFTStorage } from 'nft.storage';
-import { waitForTransaction } from '@wagmi/core'
+import { waitForTransaction } from '@wagmi/core';
+import Cropper from 'react-easy-crop'; // Import Cropper
+import getCroppedImg from '../hooks/cropImage'; // Assuming you've added the getCroppedImg function as separate module.
 
 
 const Register = () => {
@@ -17,6 +19,51 @@ const Register = () => {
   const [name, setName] = useState("");
   const [metadataURL, setMetadataURL] = useState(null); // add this line
   const [imageURL, setImageURL] = useState(null); // add this line
+  const [previewImage, setPreviewImage] = useState(null); // add this line
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const onCropChange = crop => {
+    setCrop(crop);
+  };
+
+  const onZoomChange = zoom => {
+    setZoom(zoom);
+  };
+
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const onFileChange = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFile(file);
+      let imageDataUrl = await readFile(file);
+      setPreviewImage(imageDataUrl);
+    }
+  };
+
+  const readFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleCrop = async (event) => {
+    event.preventDefault(); // Add this line
+    const croppedImage = await getCroppedImg(
+      previewImage,
+      croppedAreaPixels
+    );
+    const dataUrl = URL.createObjectURL(croppedImage);
+    setPreviewImage(dataUrl); // update the previewImage with the cropped image
+    setFile(croppedImage);  // update the file with the cropped image
+  };
+
 
   useEffect(() => {
     const checkIfRegistered = async () => {
@@ -26,7 +73,7 @@ const Register = () => {
       }
 
       const result = await readContract({
-        address: '0xfbC672F3B3e146272E4426B225791295Ca36EAe9',
+        address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
         abi: abi,
         functionName: 'factories',
         args: [address],
@@ -91,7 +138,7 @@ const Register = () => {
  
   // Prepare the call to createUserFactory
   const { request: requestCreateUserFactory } = await prepareWriteContract({
-    address: '0xfbC672F3B3e146272E4426B225791295Ca36EAe9',
+    address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
     abi: abi,
     functionName: 'createUserFactory',
     chainId: 11155111,
@@ -109,7 +156,7 @@ const Register = () => {
 
     // Call factories function to get the new Factory contract address
     const factoryContractAddress = await readContract({
-      address: '0xfbC672F3B3e146272E4426B225791295Ca36EAe9',
+      address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
       abi: abi,
       functionName: 'factories',
       args: [address],
@@ -122,7 +169,7 @@ const Register = () => {
       address: factoryContractAddress,
       abi: abi1,
       functionName: 'createProfileNFT',
-      chainId: 11155111,
+      chainId:11155111,
       args: [metadataUrl], // metadataUrl is used here
     });
 
@@ -140,64 +187,79 @@ const Register = () => {
       console.log('createProfileNFT execution failed');
     }
   }
-};
- 
-   
+};  
 
-  return (
-<div className="flex flex-col items-center justify-center min-h-screen py-2">
+return (
+  <div className="flex flex-col items-center justify-center min-h-screen py-2">
     {isConnected ? (
-        isRegistered ? (
-            <p>You are already registered</p>// we want to change to: 'you are not connected' 
-        ) : (
-            <form className="w-full max-w-sm" onSubmit={onSubmit}>
-                <div className="md:flex md:items-center mb-6">
-                    <div className="md:w-1/3">
-                        <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-                            Upload Image
-                        </label>
-                    </div>
-                    <div className="md:w-2/3">
-                        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} required />
-                    </div>
+      isRegistered ? (
+        <p>You are not connected</p>
+      ) : (
+        <form className="w-full max-w-sm" onSubmit={onSubmit}>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Upload Image
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <input type="file" accept="image/*" onChange={onFileChange} required />
+              {previewImage && (
+                <div className="relative w-full h-96">
+                  <Cropper
+                    image={previewImage}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={onCropChange}
+                    onZoomChange={onZoomChange}
+                    onCropComplete={onCropComplete}
+                    className="z-10"
+                  />
+                  <button 
+                    className="absolute bottom-4 right-4 z-20 bg-green-500 text-white p-2 rounded" 
+                    onClick={handleCrop}
+                  >
+                    Crop Image
+                  </button>
                 </div>
-                <div className="md:flex md:items-center mb-6">
-                    <div className="md:w-1/3">
-                        <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-                            Name
-                        </label>
-                    </div>
-                    <div className="md:w-2/3">
-                        <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} required />
-                    </div>
-                </div>
-                <div className="md:flex md:items-center mb-6">
-                    <div className="md:w-1/3">
-                        <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-                            Description
-                        </label>
-                    </div>
-                    <div className="md:w-2/3">
-                        <textarea className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} required></textarea>
-                    </div>
-                </div>
-                <div className="md:flex md:items-center">
-                    <div className="md:w-1/3"></div>
-                    <div className="md:w-2/3">
-                        <button className="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
-                            Register
-                        </button>
-                    </div>
-                </div>
-            </form>
-        )
+              )}
+            </div>
+          </div>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Name
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} required />
+            </div>
+          </div>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Description
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <textarea className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} required></textarea>
+            </div>
+          </div>
+          <div className="flex justify-center"> {/* This line is modified */}
+            <button className="shadow bg-orange-500 hover:bg-orange-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
+              Registrar
+            </button>
+          </div>
+        </form>
+      )
     ) : (
-        <p>Connect your wallet</p>
+      <p>Connect your wallet</p>
     )}
-</div>
+  </div>
+);
 
 
-  );
 };
 
 export default Register;

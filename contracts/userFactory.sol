@@ -32,6 +32,21 @@ contract EventNFT is ERC1155, Ownable {
 
         payable(owner()).transfer(address(this).balance);
     }
+
+    function getSupply() public view returns(uint256){
+
+        return ticketSupply;
+    }
+
+    function getPrice() public view returns(uint256){
+
+        return eventPrice;
+    }
+
+    function getDuration() public view returns(uint256){
+
+        return eventDuration;
+    }
 }
 
 contract MemoryNFT is ERC1155 {
@@ -74,9 +89,6 @@ contract UserFactory is Ownable {
         require(!profileNFTCreated, "Profile NFT already created"); // It should be called only once
         
         MemoryNFT memoryNFT = new MemoryNFT(uri); // here the contract is the creator of the contract
-
-        //transferOwnership to creator
-        // MemoryNFT.transferOwnership(owner());
     
         // Register the newly created Profile NFT contract
         profileNFT = address(memoryNFT);
@@ -84,18 +96,23 @@ contract UserFactory is Ownable {
     }
 
     // Function to create the Event NFT contract
-    function createEventNFT(string calldata uri, uint256 eventDuration, uint256 eventPrice, uint256 amount) public onlyOwner{
+    function createEventNFT(string calldata uri, uint256 eventDuration, uint256 eventPrice, uint256 amount) public onlyOwner {
+        // Check if an event already exists
+        if (currentEventNFT != address(0)) {
+            // If yes, then make sure the event has ended
+            EventNFT currentEvent = EventNFT(currentEventNFT);
+            require(block.timestamp > currentEvent.getDuration(), "Current event has not ended yet");
+        }
+
         EventNFT eventNFT = new EventNFT(uri, eventDuration, eventPrice, amount);
 
         // Transfer ownership of the Event NFT contract to the owner of UserFactory
         eventNFT.transferOwnership(owner());
-        
-        // // Start the event
-        // eventNFT.startEvent();
 
         // Register the newly created Event NFT contract
         currentEventNFT = address(eventNFT);
     }
+
 
     // Mint function for memory NFT, can be called by anyone for free
     function mintMemory() public onlyOwner{
