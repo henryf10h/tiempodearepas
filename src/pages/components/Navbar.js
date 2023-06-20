@@ -1,18 +1,27 @@
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useMediaQuery } from 'react-responsive';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const Navbar = () => {
+    const [isMounted, setIsMounted] = useState(false);
     const isLargerScreen = useMediaQuery({ minDeviceWidth: 1224 });
     const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
     };
 
+    if (!isMounted) {
+        return null;
+    }
+
     return (
-        <nav className="flex items-center justify-between py-4 bg-slate-50 border-black bg-green-400">
+        <nav className="flex items-center justify-between py-4 border-black bg-green-400">
           <div className="flex justify-between items-center w-full px-6">
             <div className="flex items-center space-x-6">
               <Link href="/"Link legacyBehavior>
@@ -58,9 +67,7 @@ const Navbar = () => {
             )}
           </div>
         </nav>
-      );
-    
-    
+    );
 };
 
 export default Navbar;

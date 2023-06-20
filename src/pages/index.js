@@ -1,15 +1,27 @@
-import Image from 'next/image'
 import Navbar from './components/Navbar';
 import MainSection from './components/MainSection';
 import { useState, useEffect } from 'react'; // this is required to use useState
 
 export default function Home() {
 
-  const [mounted, setMounted] = useState(false)
+  const [windowSize, setWindowSize] = useState({
+    width: undefined,
+    height: undefined,
+  });
 
   useEffect(() => {
-      setMounted(true)}
-    ,[])
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+    
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
 
   return (
