@@ -190,10 +190,10 @@ const Register = () => {
 };  
 
 return (
-  <div className="flex flex-col items-center justify-center min-h-screen py-2">
+  <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-orange-100">
     {isConnected ? (
       isRegistered ? (
-        <p>You are not connected</p>
+        <p>Redirecting to profile...</p>
       ) : (
         <form className="w-full max-w-sm" onSubmit={onSubmit}>
           <div className="md:flex md:items-center mb-6">
@@ -233,7 +233,7 @@ return (
               </label>
             </div>
             <div className="md:w-2/3">
-              <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
           </div>
           <div className="md:flex md:items-center mb-6">
@@ -243,7 +243,7 @@ return (
               </label>
             </div>
             <div className="md:w-2/3">
-              <textarea className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} required></textarea>
+              <textarea className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} required></textarea>
             </div>
           </div>
           <div className="flex justify-center"> {/* This line is modified */}

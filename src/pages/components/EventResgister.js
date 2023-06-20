@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback,useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { readContract, prepareWriteContract, writeContract } from '@wagmi/core';
 import { useRouter } from 'next/router';
@@ -7,6 +7,8 @@ import abi1 from '../../contract-abi1.json';
 import { NFTStorage } from 'nft.storage';
 import { waitForTransaction } from '@wagmi/core';
 import { ethers } from 'ethers';
+import Cropper from 'react-easy-crop'; // Import Cropper
+import getCroppedImg from '../hooks/cropImage'; // Assuming you've added the getCroppedImg function as separate module.
 
 const EventRegister = () => {
   const { address, isConnected } = useAccount();
@@ -20,6 +22,50 @@ const EventRegister = () => {
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
   const [amount, setAmount] = useState("");
+  const [previewImage, setPreviewImage] = useState(null); // add this line
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const onCropChange = crop => {
+    setCrop(crop);
+  };
+
+  const onZoomChange = zoom => {
+    setZoom(zoom);
+  };
+
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const onFileChange = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFile(file);
+      let imageDataUrl = await readFile(file);
+      setPreviewImage(imageDataUrl);
+    }
+  };
+
+  const readFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleCrop = async (event) => {
+    event.preventDefault(); // Add this line
+    const croppedImage = await getCroppedImg(
+      previewImage,
+      croppedAreaPixels
+    );
+    const dataUrl = URL.createObjectURL(croppedImage);
+    setPreviewImage(dataUrl); // update the previewImage with the cropped image
+    setFile(croppedImage);  // update the file with the cropped image
+  };
 
   useEffect(() => {
     const checkIfRegistered = async () => {
@@ -86,9 +132,10 @@ const EventRegister = () => {
     });
 
     const priceInWei = ethers.utils.parseEther(price);
+    const stringWei = priceInWei.toString(10);
 
     console.log(typeof factoryContractAddress ,factoryContractAddress);
-    console.log(typeof priceInWei);
+    console.log(typeof priceInWei, priceInWei);
     console.log(typeof metadataUrl);
 
     const { request: requestCreateProfileNFT } = await prepareWriteContract({
@@ -96,12 +143,14 @@ const EventRegister = () => {
       abi: abi1,
       functionName: 'createEventNFT',
       chainId:11155111,
-      args: [metadataUrl,1000,1000000000000000,20], // metadataUrl is used here
+      args: [metadataUrl,parseInt(duration),parseInt(stringWei),parseInt(amount)], // metadataUrl is used here
     });
 
     console.log(requestCreateProfileNFT);
 
     const { hash: createProfileNFTHash } = await writeContract(requestCreateProfileNFT);
+    const data = await waitForTransaction({ hash: createProfileNFTHash });
+    console.log(data);
 
     if (createProfileNFTHash) {
       router.push(`/profile/${address}`);
@@ -116,7 +165,7 @@ const EventRegister = () => {
 <div className="flex flex-col items-center justify-center min-h-screen py-2">
   {isConnected ? (
     isRegistered ? (
-      <p>You are already registered</p>
+      <p>Redirecting to profile...</p>
     ) : (
       <form className="w-full max-w-sm" onSubmit={onSubmit}>
         <div className="md:flex md:items-center mb-6">
@@ -126,7 +175,27 @@ const EventRegister = () => {
             </label>
           </div>
           <div className="md:w-2/3">
-            <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} required />
+            <input type="file" accept="image/*" onChange={onFileChange} required />
+            {previewImage && (
+                <div className="relative w-full h-96">
+                  <Cropper
+                    image={previewImage}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={onCropChange}
+                    onZoomChange={onZoomChange}
+                    onCropComplete={onCropComplete}
+                    className="z-10"
+                  />
+                  <button 
+                    className="absolute bottom-4 right-4 z-20 bg-green-500 text-white p-2 rounded" 
+                    onClick={handleCrop}
+                  >
+                    Crop Image
+                  </button>
+                </div>
+              )}
           </div>
         </div>
         <div className="md:flex md:items-center mb-6">
@@ -182,7 +251,7 @@ const EventRegister = () => {
         <div className="md:flex md:items-center">
           <div className="md:w-1/3"></div>
           <div className="md:w-2/3">
-            <button className="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
+            <button className="shadow bg-orange-500 hover:bg-orange-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
               Register
             </button>
           </div>

@@ -7,6 +7,8 @@ import abi2 from '../../contract-abi2.json'; // Assuming that ABI for MemoryNFT 
 import abi3 from '../../contract-abi3.json';
 import { useRouter } from 'next/router';
 import Web3 from 'web3';
+import EventDuration from '../hooks/eventDuration';
+import { ethers } from 'ethers';
 
 // Define the Profile component
 const Profile = ({ id }) => {
@@ -32,13 +34,18 @@ const Profile = ({ id }) => {
     };
 
     const mintEventToken = async () => {
+        const stringWei = eventPrice.toString();
+        console.log(stringWei);
+        // use ethers to convert the wei value to a BigNumber
+        const weiToBigNumber = ethers.utils.parseUnits(stringWei, "wei");
+        console.log(weiToBigNumber);
         try {
             const { request: requestMintEvent } = await prepareWriteContract({
                 address: factoryAddress,
                 abi: abi1, // Assume abi1 is the ABI for the EventNFT contract
                 functionName: 'mintEvent',
                 chainId: 11155111, 
-                value: 1000000000000000, // Assume you have eventPrice variable in your state
+                value: weiToBigNumber, // Assume you have eventPrice variable in your state
             });
             
             const { hash } = await writeContract(requestMintEvent);
@@ -204,57 +211,67 @@ const Profile = ({ id }) => {
         fetchFactoryAddressAndUri();
     }, [id]);
 
-    // Loading state handling here
     if (!factoryAddress || !memoryNFTAddress || !uri || !profileData) {
-        return <p>Loading...</p>;
-    }
+        return (
+          <div className="flex items-center justify-center min-h-screen text-2xl font-bold text-green-500 bg-orange-100">
+            Loading
+            <span className="animate-ping ml-1">.</span>
+            <span className="animate-ping ml-1 delay-150">.</span>
+            <span className="animate-ping ml-1 delay-300">.</span>
+          </div>
+        );
+      }
+      
 
     return (
-        <div className="container mx-auto py-4 min-h-screen flex flex-col sm:flex-row items-center justify-center sm:space-x-64 overflow-auto">
-            <div className="max-w-sm bg-white rounded overflow-hidden shadow-lg p-6">
-                <img className="w-full" src={profileData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Profile" />
-                <div className="px-6 pt-4 text-center">
-                    <div className="font-bold text-xl mb-2">{profileData.name}</div>
-                    <p className="text-gray-700 text-base">
-                        {profileData.description}
-                    </p>
-                </div>
-                <div className="px-6 pt-4 pb-2 text-center flex flex-col items-center">
-                    <input type="text" value={userAddress} onChange={handleAddressChange} placeholder="Enter an address" className="mb-4 rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-300"/>
-                    <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintToken}>
-                        MINT
-                    </button>
+        <div className="container mx-auto py-4 min-h-screen flex flex-col sm:flex-row items-center justify-center sm:space-x-64 overflow-auto bg-orange-100">
+            <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 flex-1 mb-4 sm:mb-0">
+                <img className="w-full object-cover" src={profileData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Profile" />
+                <div className="text-left">
+                <div className="font-bold text-xl mb-2">{profileData.name}</div>
+                        <p className="text-gray-700 text-base">
+                            {profileData.description}
+                        </p>
+                    </div>
+                    <div className="py-4 border-b border-green-600 mb-4"></div>
+                    <div className="text-center flex flex-col items-center">
+                        <input type="text" value={userAddress} onChange={handleAddressChange} placeholder="Enter an address" className="mb-4 rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                        <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintToken}>
+                            MINT
+                        </button>
                 </div>
             </div>
-    
-            {eventData ? (
-                <div className="flex flex-col w-full sm:max-w-sm bg-white rounded overflow-hidden shadow-lg p-6 space-y-4 mb-4 sm:mb-0 overflow-y-auto">
-                    {/* Card for Event NFT */}
-                    <img className="w-full h-64 object-cover" src={eventData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Event" />
-                    <div className="px-6 py-1 text-center">
-                        <div className="font-bold text-xl mb-2">{eventData.name}</div>
-                        <p className="text-gray-700 text-base">
-                            {eventData.description}
-                        </p>
-                        <p className="text-gray-700 text-base">
-                            Supply: {eventSupply ? eventSupply.toString() : ''}
-                        </p>
-                        <p className="text-gray-700 text-base">
-                            Price: {eventPrice ? Web3.utils.fromWei(eventPrice.toString(), 'ether') : ''}
-                        </p>
-                        <p className="text-gray-700 text-base">
-                            Duration: {eventDuration ? eventDuration.toString() : ''}
-                        </p>
-                    </div>
-                    <div className="px-6 py-1 text-center flex flex-col items-center">
-                        <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintEventToken}>
-                            Mint
-                        </button>
-                        <a className="text-blue-500 hover:text-blue-700 cursor-pointer underline" onClick={() => router.push('/neweventregister')}>
-                            Create a new event
-                        </a>
-                    </div>
+        
+        {eventData ? (
+            <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 flex-1 mb-4 sm:mb-0 overflow-y-auto">
+            <img className="w-full object-cover" src={eventData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Event" />
+            <div className="text-left">
+                <div className="font-bold text-xl mb-2">{eventData.name}</div>
+                <p className="text-gray-700 text-base">
+                    {eventData.description}
+                </p>
+                <div className="flex justify-between my-2">
+                    <p className="text-orange-700 text-base font-bold">
+                    ⟠ {eventPrice ? Web3.utils.fromWei(eventPrice.toString(), 'ether') : ''}Ξ
+                    </p>
+                    <p className="text-gray-700 text-base font-bold">
+                       <EventDuration duration={eventDuration} />
+                    </p>
                 </div>
+            </div>
+            <div className="py-4 border-b mb-4 border-green-600"></div>
+            <div className="text-center flex flex-col items-center">
+                <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintEventToken}>
+                    MINT
+                </button>
+            </div>
+            <div className="flex justify-end">
+            <button onClick={() => router.push('/neweventregister')}
+                className="text-blue-500 hover:text-blue-700 cursor-pointer">
+                ➕
+            </button>
+            </div>
+        </div>
             ) : (
                 <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline self-center mt-4 sm:mt-0" onClick={() => router.push('/eventregister')}>
                     CREA UN EVENTO
@@ -262,6 +279,7 @@ const Profile = ({ id }) => {
             )}
         </div>
     );
+    
     
       
 };
