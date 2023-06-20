@@ -58,14 +58,23 @@ const NewEventRegister = () => {
   };
 
   const handleCrop = async (event) => {
-    event.preventDefault(); // Add this line
-    const croppedImage = await getCroppedImg(
-      previewImage,
-      croppedAreaPixels
-    );
-    const dataUrl = URL.createObjectURL(croppedImage);
-    setPreviewImage(dataUrl); // update the previewImage with the cropped image
-    setFile(croppedImage);  // update the file with the cropped image
+    event.preventDefault();
+    const croppedImage = await getCroppedImg(previewImage, croppedAreaPixels);
+    setPreviewImage(croppedImage); // update the previewImage with the cropped image
+    const file = dataURLToFile(croppedImage, 'croppedImage.jpg');
+    setFile(file); // update the file with the cropped image
+  };
+  
+  const dataURLToFile = (dataURL, filename) => {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
   };
 
   useEffect(() => {
