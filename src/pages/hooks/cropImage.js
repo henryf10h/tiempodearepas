@@ -1,5 +1,8 @@
 // Function to create a new image from the crop area of the original image
 export default async function getCroppedImg(imageSrc, cropArea) {
+     if (typeof window === 'undefined') {
+      return null;
+        }
      const image = new Image();
      image.src = imageSrc;
    
