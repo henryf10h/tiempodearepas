@@ -96,7 +96,7 @@ const Profile = ({ id }) => {
             try {
                 // Call 'factories' function to get the Factory contract address
                 const factoryAddressResponse = await readContract({
-                    address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
+                    address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
                     abi: abi,
                     functionName: 'factories',
                     args: [id],
@@ -222,66 +222,67 @@ const Profile = ({ id }) => {
         );
       }
       
-
-    return (
+      return (
         <div className="container mx-auto py-4 min-h-screen flex flex-col sm:flex-row items-center justify-center sm:space-x-64 overflow-auto bg-orange-100">
-            <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 flex-1 mb-4 sm:mb-0">
-                <img className="w-full object-cover" src={profileData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Profile" />
-                <div className="text-left">
-                <div className="font-bold text-xl mb-2">{profileData.name}</div>
-                        <p className="text-gray-700 text-base">
-                            {profileData.description}
-                        </p>
-                    </div>
-                    <div className="py-4 border-b border-green-600 mb-4"></div>
-                    <div className="text-center flex flex-col items-center">
-                        <input type="text" value={userAddress} onChange={handleAddressChange} placeholder="Enter an address" className="mb-4 rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-300"/>
-                        <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintToken}>
-                            MINT
-                        </button>
-                </div>
-            </div>
-        
-        {eventData ? (
-            <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 flex-1 mb-4 sm:mb-0 overflow-y-auto">
-            <img className="w-full object-cover" src={eventData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Event" />
+          <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 mb-4 sm:mb-0">
+            <img className="w-full object-cover" src={profileData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Profile" />
             <div className="text-left">
+              <div className="font-bold text-xl mb-2">{profileData.name}</div>
+              <p className="text-gray-700 text-base">
+                {profileData.description}
+              </p>
+            </div>
+            <div className="py-4 border-b border-green-600 mb-4"></div>
+            <div className="text-center flex flex-col items-center">
+              <input type="text" value={userAddress} onChange={handleAddressChange} placeholder="Enter an address" className="mb-4 rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintToken}>
+                MINT
+              </button>
+            </div>
+          </div>
+      
+          {eventData ? (
+            <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 mb-4 ml-0 sm:ml-4">
+              <img className="w-full object-cover" src={eventData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Event" />
+              <div className="text-left">
                 <div className="font-bold text-xl mb-2">{eventData.name}</div>
                 <p className="text-gray-700 text-base">
-                    {eventData.description}
+                  {eventData.description}
                 </p>
                 <div className="flex justify-between my-2">
-                    <p className="text-orange-700 text-base font-bold">
+                  <p className="text-orange-700 text-base font-bold">
                     ⟠ {eventPrice ? Web3.utils.fromWei(eventPrice.toString(), 'ether') : ''}Ξ
-                    </p>
-                    <p className="text-gray-700 text-base font-bold">
-                       <EventDuration duration={eventDuration} />
-                    </p>
+                  </p>
+                  <p className="text-gray-700 text-base font-bold">
+                    <EventDuration duration={eventDuration} />
+                  </p>
                 </div>
-            </div>
-            <div className="py-4 border-b mb-4 border-green-600"></div>
-            <div className="text-center flex flex-col items-center">
+              </div>
+              <div className="py-4 border-b mb-4 border-green-600"></div>
+              <div className="text-center flex flex-col items-center">
                 <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintEventToken}>
-                    MINT
+                  MINT
                 </button>
-            </div>
-            <div className="flex justify-end">
-            <button onClick={() => router.push('/neweventregister')}
-                className="text-blue-500 hover:text-blue-700 cursor-pointer">
-                ➕
-            </button>
-            </div>
-        </div>
-            ) : (
-                <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline self-center mt-4 sm:mt-0" onClick={() => router.push('/eventregister')}>
-                    CREA UN EVENTO
+              </div>
+              <div className="flex justify-end">
+                <button onClick={() => router.push('/neweventregister')} className="text-blue-500 hover:text-blue-700 cursor-pointer">
+                  ➕
                 </button>
-            )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-end mt-4 sm:mt-0 ml-2 sm:ml-4">
+              <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded" onClick={() => router.push('/eventregister')}>
+                CREA UN EVENTO
+              </button>
+            </div>
+          )}
         </div>
-    );
-    
-    
+      );
+         
       
+           
+           
 };
 
 // Export the Profile component

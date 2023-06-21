@@ -7,7 +7,7 @@ import abi1 from '../../contract-abi1.json';
 import { NFTStorage } from 'nft.storage';
 import { waitForTransaction } from '@wagmi/core';
 import Cropper from 'react-easy-crop'; // Import Cropper
-import getCroppedImg from '../hooks/cropImage'; // Assuming you've added the getCroppedImg function as separate module.
+// import getCroppedImg from '../hooks/cropImage'; // Assuming you've added the getCroppedImg function as separate module.
 
 
 const Register = () => {
@@ -55,23 +55,82 @@ const Register = () => {
 
   const handleCrop = async (event) => {
     event.preventDefault();
-    const croppedImage = await getCroppedImg(previewImage, croppedAreaPixels);
-    setPreviewImage(croppedImage); // update the previewImage with the cropped image
-    const file = dataURLToFile(croppedImage, 'croppedImage.jpg');
-    setFile(file); // update the file with the cropped image
+    if (!previewImage || !croppedAreaPixels) {
+      return;
+    }
+    try {
+      const croppedImage = await getCroppedImage(previewImage, croppedAreaPixels);
+      setPreviewImage(croppedImage); // update the previewImage with the cropped image
+      const file = await dataURLToFile(croppedImage, 'croppedImage.jpg');
+      setFile(file); // update the file with the cropped image
+    } catch (error) {
+      console.error('Error cropping image:', error);
+    }
   };
   
+  const getCroppedImage = (imageSrc, croppedAreaPixels) => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const image = new Image();
+      image.src = imageSrc;
+      image.onload = () => {
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
+        const canvasWidth = croppedAreaPixels.width;
+        const canvasHeight = croppedAreaPixels.height;
+        const canvasContext = canvas.getContext('2d');
+  
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+  
+        canvasContext.drawImage(
+          image,
+          croppedAreaPixels.x * scaleX,
+          croppedAreaPixels.y * scaleY,
+          croppedAreaPixels.width * scaleX,
+          croppedAreaPixels.height * scaleY,
+          0,
+          0,
+          canvasWidth,
+          canvasHeight
+        );
+  
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = () => {
+            const base64data = reader.result;
+            resolve(base64data);
+          };
+        }, 'image/jpeg');
+      };
+      image.onerror = (error) => reject(error);
+    });
+  };
+  
+  
   const dataURLToFile = (dataURL, filename) => {
+    if (!dataURL || typeof dataURL !== 'string') {
+      return null;
+    }
+  
     const arr = dataURL.split(',');
+    if (arr.length < 2) {
+      return null;
+    }
+  
     const mime = arr[0].match(/:(.*?);/)[1];
     const bstr = atob(arr[1]);
     let n = bstr.length;
     const u8arr = new Uint8Array(n);
+  
     while (n--) {
       u8arr[n] = bstr.charCodeAt(n);
     }
+  
     return new File([u8arr], filename, { type: mime });
   };
+  
 
 
   useEffect(() => {
@@ -82,7 +141,7 @@ const Register = () => {
       }
 
       const result = await readContract({
-        address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
+        address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
         abi: abi,
         functionName: 'factories',
         args: [address],
@@ -104,17 +163,20 @@ const Register = () => {
   
   const onSubmit = async (e) => {
     e.preventDefault();
- 
+
     // Initialize the client
     const client = new NFTStorage({ token: process.env.NEXT_PUBLIC_NFT_STORAGE_API_KEY });
- 
+  
+    // Convert the cropped image to a File object
+    const croppedFile = new File([file], 'croppedImage.jpg', { type: 'image/jpeg' });
+  
     // Prepare the NFT metadata
     const nftMetadata = {
-        name: name,
-        description: description,
-        image: file, // use image File object as `image` field
+      name: name,
+      description: description,
+      image: croppedFile, // use the croppedFile as the `image` field
     };
- 
+  
     // Upload the NFT metadata to IPFS and get the CID
     const metadata = await client.store(nftMetadata);
     console.log(metadata);
@@ -147,7 +209,7 @@ const Register = () => {
  
   // Prepare the call to createUserFactory
   const { request: requestCreateUserFactory } = await prepareWriteContract({
-    address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
+    address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
     abi: abi,
     functionName: 'createUserFactory',
     chainId: 11155111,
@@ -165,7 +227,7 @@ const Register = () => {
 
     // Call factories function to get the new Factory contract address
     const factoryContractAddress = await readContract({
-      address: '0x0FD831cb538F0452B84D6848EC905D8ECb05DEc7',
+      address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
       abi: abi,
       functionName: 'factories',
       args: [address],
@@ -214,25 +276,26 @@ return (
             <div className="md:w-2/3">
               <input type="file" accept="image/*" onChange={onFileChange} required />
               {previewImage && (
-                <div className="relative w-full h-96">
-                  <Cropper
-                    image={previewImage}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={onCropChange}
-                    onZoomChange={onZoomChange}
-                    onCropComplete={onCropComplete}
-                    className="z-10"
-                  />
-                  <button 
-                    className="absolute bottom-4 right-4 z-20 bg-green-500 text-white p-2 rounded" 
-                    onClick={handleCrop}
-                  >
-                    Crop Image
-                  </button>
-                </div>
-              )}
+  <div className="relative w-full h-96">
+    <Cropper
+      image={previewImage}
+      crop={crop}
+      zoom={zoom}
+      aspect={1}
+      onCropChange={onCropChange}
+      onZoomChange={onZoomChange}
+      onCropComplete={onCropComplete}
+      className="z-10"
+    />
+    <button 
+      className="absolute bottom-4 right-4 z-20 bg-green-500 text-white p-2 rounded" 
+      onClick={handleCrop}
+    >
+      Crop Image
+    </button>
+  </div>
+)}
+
             </div>
           </div>
           <div className="md:flex md:items-center mb-6">

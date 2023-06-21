@@ -3,26 +3,40 @@ export default async function getCroppedImg(imageSrc, cropArea) {
     return null;
   }
 
-  const image = new Image();
-  image.src = imageSrc;
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = imageSrc;
 
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
 
-  canvas.width = cropArea.width;
-  canvas.height = cropArea.height;
+      canvas.width = cropArea.width;
+      canvas.height = cropArea.height;
 
-  ctx.drawImage(
-    image,
-    cropArea.x,
-    cropArea.y,
-    cropArea.width,
-    cropArea.height,
-    0,
-    0,
-    cropArea.width,
-    cropArea.height
-  );
+      ctx.drawImage(
+        image,
+        cropArea.x,
+        cropArea.y,
+        cropArea.width,
+        cropArea.height,
+        0,
+        0,
+        cropArea.width,
+        cropArea.height
+      );
 
-  return canvas.toDataURL('image/jpeg');
+      canvas.toBlob(
+        (blob) => {
+          resolve(blob);
+        },
+        'image/jpeg',
+        1
+      );
+    };
+
+    image.onerror = (error) => {
+      reject(error);
+    };
+  });
 }
