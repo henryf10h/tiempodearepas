@@ -42,8 +42,12 @@ const Register = () => {
       setFile(file);
       let imageDataUrl = await readFile(file);
       setPreviewImage(imageDataUrl);
+    } else {
+      setFile(null);
+      setPreviewImage(null); // if no file is selected, remove the current preview
     }
   };
+  
 
   const readFile = (file) => {
     return new Promise((resolve) => {
