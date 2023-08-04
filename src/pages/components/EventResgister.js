@@ -26,6 +26,7 @@ const EventRegister = () => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [loading, setLoading] = useState(false); // new state for loading
 
   const onCropChange = crop => {
     setCrop(crop);
@@ -149,7 +150,7 @@ const getCroppedImage = (imageSrc, croppedAreaPixels) => {
       }
 
       const result = await readContract({
-        address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
+        address: '0xE12C657b5F6A6bc7ff862764FFFB73c9C46397dD',
         abi: abi,
         functionName: 'factories',
         args: [address],
@@ -174,7 +175,9 @@ const getCroppedImage = (imageSrc, croppedAreaPixels) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true); // set loading true before starting the transaction
+  
+    try {
     // Initialize the client
     const client = new NFTStorage({ token: process.env.NEXT_PUBLIC_NFT_STORAGE_API_KEY });
   
@@ -206,7 +209,7 @@ const getCroppedImage = (imageSrc, croppedAreaPixels) => {
     setImageURL(imageHttpUrl);
 
     const factoryContractAddress = await readContract({
-      address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
+      address: '0xE12C657b5F6A6bc7ff862764FFFB73c9C46397dD',
       abi: abi,
       functionName: 'factories',
       args: [address],
@@ -232,120 +235,133 @@ const getCroppedImage = (imageSrc, croppedAreaPixels) => {
     const { hash: createProfileNFTHash } = await writeContract(requestCreateProfileNFT);
     const data = await waitForTransaction({ hash: createProfileNFTHash });
     console.log(data);
-
-    if (createProfileNFTHash) {
-      router.push(`/profile/${address}`);
-    } else {
-      console.log('createProfileNFT execution failed');
+      if (createProfileNFTHash) {
+        router.push(`/profile/${address}`);
+      } else {
+        console.log('createProfileNFT execution failed');
+      }
+    } catch (error) {
+      console.error("Error while submitting: ", error);
+    } finally {
+      setLoading(false); // set loading false after the transaction ends
     }
-  
-};
+  };
    
-
   return (
-<div className="flex flex-col items-center justify-center min-h-screen py-2 bg-orange-100">
-  {isConnected ? (
-    isRegistered ? (
-      <p>Redirecting to profile...</p>
-    ) : (
-      <form className="w-full max-w-sm" onSubmit={onSubmit}>
-        <div className="md:flex md:items-center mb-6">
-          <div className="md:w-1/3">
-            <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-              Upload Image
-            </label>
-          </div>
-          <div className="md:w-2/3">
-            <input type="file" accept="image/*" onChange={onFileChange} required />
-            {previewImage && (
-                <div className="relative w-full h-96">
-                  <Cropper
-                    image={previewImage}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={onCropChange}
-                    onZoomChange={onZoomChange}
-                    onCropComplete={onCropComplete}
-                    className="z-10"
-                  />
-                  <button 
-                    className="absolute bottom-4 right-4 z-20 bg-green-500 text-white p-2 rounded" 
-                    onClick={handleCrop}
-                  >
-                    Crop Image
-                  </button>
-                </div>
-              )}
-          </div>
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-white">
+      {loading ? (
+        <div className="flex items-center justify-center min-h-screen text-2xl font-bold text-green-500">
+          Cargando
+          <span className="animate-ping ml-1">.</span>
+          <span className="animate-ping ml-1 delay-150">.</span>
+          <span className="animate-ping ml-1 delay-300">.</span>
         </div>
-        <div className="md:flex md:items-center mb-6">
-          <div className="md:w-1/3">
-            <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-              Name
-            </label>
+      ) : isConnected ? (
+        <form className="w-full max-w-sm" onSubmit={onSubmit}>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Cargar Imagen
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <input type="file" accept="image/*" onChange={onFileChange} required />
+              {previewImage && (
+                  <div className="relative w-full h-96">
+                    <Cropper
+                      image={previewImage}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={1}
+                      onCropChange={onCropChange}
+                      onZoomChange={onZoomChange}
+                      onCropComplete={onCropComplete}
+                      className="z-10"
+                    />
+                    <button 
+                      className="absolute bottom-4 right-4 z-20 bg-green-500 text-white p-2 rounded" 
+                      onClick={handleCrop}
+                    >
+                      Cortar Imagen
+                    </button>
+                  </div>
+                )}
+            </div>
           </div>
-          <div className="md:w-2/3">
-            <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} required />
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Nombre
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Nombre del evento" value={name} onChange={(e) => setName(e.target.value)} required />
+            </div>
           </div>
-        </div>
-        <div className="md:flex md:items-center mb-6">
-          <div className="md:w-1/3">
-            <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-              Description
-            </label>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Descripción
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <textarea className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" placeholder="Descripción del evento" value={description} onChange={(e) => setDescription(e.target.value)} required></textarea>
+            </div>
           </div>
-          <div className="md:w-2/3">
-            <textarea className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} required></textarea>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Duración
+              </label>
+            </div>
+            <div className="md:w-2/3">
+    <select 
+      className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" 
+      id="eventDuration" 
+      value={duration} 
+      onChange={(e) => setDuration(e.target.value)}
+      required
+    >
+      <option value="">Selecciona la duración...</option>
+      {Array.from({length: 30}, (_, i) => i + 1).map((day) => (
+        <option key={day} value={day*24*60*60}>{day} {day === 1 ? 'dia' : 'dias'}</option>
+      ))}
+    </select>
+  </div>
           </div>
-        </div>
-        <div className="md:flex md:items-center mb-6">
-          <div className="md:w-1/3">
-            <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-              Duration
-            </label>
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Precio
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Ingresa un precio.e.g. 0.01 eth" value={price} onChange={(e) => setPrice(e.target.value)} required />
+            </div>
           </div>
-          <div className="md:w-2/3">
-            <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter duration" value={duration} onChange={(e) => setDuration(e.target.value)} required />
+          <div className="md:flex md:items-center mb-6">
+            <div className="md:w-1/3">
+              <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
+                Cantidad de tickets
+              </label>
+            </div>
+            <div className="md:w-2/3">
+              <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Ingresa una cantidad" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            </div>
           </div>
-        </div>
-        <div className="md:flex md:items-center mb-6">
-          <div className="md:w-1/3">
-            <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-              Price
-            </label>
+          <div className="md:flex md:items-center">
+            <div className="md:w-1/3"></div>
+            <div className="md:w-2/3">
+              <button className="shadow bg-orange-500 hover:bg-orange-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
+                Registrar
+              </button>
+            </div>
           </div>
-          <div className="md:w-2/3">
-            <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter price" value={price} onChange={(e) => setPrice(e.target.value)} required />
-          </div>
-        </div>
-        <div className="md:flex md:items-center mb-6">
-          <div className="md:w-1/3">
-            <label className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" htmlFor="inline-full-name">
-              Amount
-            </label>
-          </div>
-          <div className="md:w-2/3">
-            <input className="bg-white-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" type="text" placeholder="Enter amount" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-          </div>
-        </div>
-        <div className="md:flex md:items-center">
-          <div className="md:w-1/3"></div>
-          <div className="md:w-2/3">
-            <button className="shadow bg-orange-500 hover:bg-orange-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
-              Register
-            </button>
-          </div>
-        </div>
-      </form>
-    )
-  ) : (
-    <p>Connect your wallet</p>
-  )}
-</div>
-
-
-
+        </form>
+      ) : (
+        <p>Conecta tu cartera</p>
+      )}
+    </div>
   );
 };
 

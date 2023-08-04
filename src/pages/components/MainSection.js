@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const MainSection = () => {
   return (
-    <div className="flex flex-col items-center justify-center sm:justify-start py-2 bg-orange-100">
+    <div className="flex flex-col items-center justify-center sm:justify-start py-2 bg-white">
       <div className="w-full max-w-md mx-auto text-center mb-6">
         <h1 className="mt-10 sm:mt-20 text-2xl sm:text-4xl font-bold mb-2 text-black-500">¿Eres un amante de las Arepas? 🍴</h1>
         <p className="text-base sm:text-lg text-gray-600 mb-6 leading-relaxed">

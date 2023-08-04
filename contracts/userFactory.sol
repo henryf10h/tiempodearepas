@@ -33,6 +33,11 @@ contract EventNFT is ERC1155, Ownable {
         payable(owner()).transfer(address(this).balance);
     }
 
+    function getCounter() public view returns(uint256){
+
+        return counter;
+    }
+
     function getSupply() public view returns(uint256){
 
         return ticketSupply;

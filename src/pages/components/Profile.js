@@ -9,6 +9,8 @@ import { useRouter } from 'next/router';
 import Web3 from 'web3';
 import EventDuration from '../hooks/eventDuration';
 import { ethers } from 'ethers';
+import { useAccount } from 'wagmi';
+import Withdraw from './Withdraw';
 
 // Define the Profile component
 const Profile = ({ id }) => {
@@ -24,6 +26,17 @@ const Profile = ({ id }) => {
     const [eventPrice, setEventPrice] = useState(null);
     const [eventDuration, setEventDuration] = useState(null);
     const [userEventAddress, setUserEventAddress] = useState('');
+    const [eventCounter, setEventCounter] = useState(null); 
+    const [transactionHash, setTransactionHash] = useState(null);
+    const isEventOpen = eventDuration > (Date.now() / 1000);
+    const { address } = useAccount(); // Using the useAccount hook to get the connected user's address
+
+    // Check if the account address is the same as the profile's ID (address)
+    const isAddressMatch = address === id;
+    let provider;
+    if (typeof window !== 'undefined') {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+    }
 
     const handleAddressChange = (event) => {
         setUserAddress(event.target.value);
@@ -31,6 +44,15 @@ const Profile = ({ id }) => {
 
     const handleEventAddressChange = (event) => {
         setUserEventAddress(event.target.value); // NEW
+    };
+
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(memoryNFTAddress);
+        alert('Address copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
     };
 
     const mintEventToken = async () => {
@@ -50,6 +72,12 @@ const Profile = ({ id }) => {
             
             const { hash } = await writeContract(requestMintEvent);
             console.log("Transaction Hash: ", hash);
+            const receipt = await provider.waitForTransaction(hash);
+            console.log('Transaction Receipt: ', receipt);
+            // after confirmation, update the state which will trigger useEffect
+            if(receipt.confirmations > 0){
+                setTransactionHash(hash);
+            }
     
             const data = await waitForTransaction({ hash });
             console.log(data);
@@ -90,13 +118,15 @@ const Profile = ({ id }) => {
         }
     };
       
+    useEffect(() => {
+    }, [provider]);
 
     useEffect(() => { 
         const fetchFactoryAddressAndUri = async () => {
             try {
                 // Call 'factories' function to get the Factory contract address
                 const factoryAddressResponse = await readContract({
-                    address: '0xc1aaa602B228e2e58c486A494c5A372edec10168',
+                    address: '0xE12C657b5F6A6bc7ff862764FFFB73c9C46397dD',
                     abi: abi,
                     functionName: 'factories',
                     args: [id],
@@ -181,7 +211,7 @@ const Profile = ({ id }) => {
                             functionName: 'getSupply',
                             args: [], 
                         });
-                        setEventSupply(eventSupplyResponse);
+                        setEventSupply(eventSupplyResponse.toString());
                         console.log(typeof eventSupplyResponse,eventSupplyResponse);
                     
                         const eventPriceResponse = await readContract({
@@ -201,6 +231,15 @@ const Profile = ({ id }) => {
                         });
                         setEventDuration(eventDurationResponse);
                         console.log(typeof eventDurationResponse,eventDurationResponse);
+
+                        const eventCounterResponse = await readContract({
+                          address: eventNFTAddressResponse,
+                          abi: abi3,
+                          functionName: 'getCounter',
+                          args: [], 
+                      });
+                      setEventCounter(eventCounterResponse.toString());
+                      console.log(typeof eventCounterResponse,eventCounterResponse);
                     }
                 }
             } catch (error) {
@@ -209,12 +248,12 @@ const Profile = ({ id }) => {
         }
 
         fetchFactoryAddressAndUri();
-    }, [id]);
+    }, [id, transactionHash]);
 
     if (!factoryAddress || !memoryNFTAddress || !uri || !profileData) {
         return (
-          <div className="flex items-center justify-center min-h-screen text-2xl font-bold text-green-500 bg-orange-100">
-            Loading
+          <div className="flex items-center justify-center min-h-screen text-2xl font-bold text-green-500 bg-white">
+            Cargando
             <span className="animate-ping ml-1">.</span>
             <span className="animate-ping ml-1 delay-150">.</span>
             <span className="animate-ping ml-1 delay-300">.</span>
@@ -223,53 +262,77 @@ const Profile = ({ id }) => {
       }
       
       return (
-        <div className="container mx-auto py-4 min-h-screen flex flex-col sm:flex-row items-center justify-center sm:space-x-64 overflow-auto bg-orange-100">
-          <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 mb-4 sm:mb-0">
+        <>
+        <div className="container mx-auto py-4 min-h-screen flex flex-col sm:flex-row items-center justify-center sm:space-x-64 overflow-auto bg-white">
+          <div className="sm:max-w-sm bg-white rounded overflow-hidden shadow-2xl mb-4 sm:mb-0">
             <img className="w-full object-cover" src={profileData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Profile" />
-            <div className="text-left">
-              <div className="font-bold text-xl mb-2">{profileData.name}</div>
-              <p className="text-gray-700 text-base">
-                {profileData.description}
-              </p>
+            <div className="p-6">
+              <div className="text-left">
+                <div className="font-bold text-xl mb-2">{profileData.name}</div>
+                <p className="text-gray-700 text-base">
+                  {profileData.description}
+                </p>
+              </div>
+              <div className="py-4 border-b border-black mb-4"></div>
+              <div className="text-center flex flex-col items-center">
+                <input type="text" value={userAddress} onChange={handleAddressChange} placeholder="Mandar NFT a e.g. 0x67t...7890" className="mb-4 rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintToken}>
+                  ACUÑA NFT!
+                </button>
+              </div>
             </div>
-            <div className="py-4 border-b border-green-600 mb-4"></div>
-            <div className="text-center flex flex-col items-center">
-              <input type="text" value={userAddress} onChange={handleAddressChange} placeholder="Enter an address" className="mb-4 rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-300" />
-              <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintToken}>
-                MINT
-              </button>
-            </div>
+             <div className="p-2 text-left">
+              <button  onClick={() => alert('Carta de perfil: Información sobre el dueño del perfil.')}>ℹ️</button>
+              <button onClick={handleCopy} style={{ cursor: 'pointer' }}>⏹️</button>
+             </div>
           </div>
       
           {eventData ? (
-            <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 mb-4 ml-0 sm:ml-4">
-              <img className="w-full object-cover" src={eventData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Event" />
-              <div className="text-left">
-                <div className="font-bold text-xl mb-2">{eventData.name}</div>
-                <p className="text-gray-700 text-base">
-                  {eventData.description}
-                </p>
-                <div className="flex justify-between my-2">
-                  <p className="text-orange-700 text-base font-bold">
-                    ⟠ {eventPrice ? Web3.utils.fromWei(eventPrice.toString(), 'ether') : ''}Ξ
-                  </p>
-                  <p className="text-gray-700 text-base font-bold">
-                    <EventDuration duration={eventDuration} />
-                  </p>
-                </div>
-              </div>
-              <div className="py-4 border-b mb-4 border-green-600"></div>
-              <div className="text-center flex flex-col items-center">
-                <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={mintEventToken}>
-                  MINT
-                </button>
-              </div>
-              <div className="flex justify-end">
-                <button onClick={() => router.push('/neweventregister')} className="text-blue-500 hover:text-blue-700 cursor-pointer">
-                  ➕
-                </button>
-              </div>
-            </div>
+  <div className="sm:max-w-sm bg-green-400 rounded overflow-hidden shadow-lg p-6 mb-4 ml-0 sm:ml-4">
+  <img className="w-full object-cover p-0 pt-0" src={eventData.image.replace("ipfs://", "https://ipfs.io/ipfs/")} alt="Event" />
+  <div className="text-left">
+    <div className="font-bold text-xl mb-2">{eventData.name}</div>
+    <p className="text-gray-700 text-base">
+      {eventData.description}
+    </p>
+    <div className="flex justify-between my-2">
+    <div>
+        <p className="font-bold text-base">Precio:</p>
+        <p className="text-orange-700 text-base font-bold">
+          ⟠ {eventPrice ? Web3.utils.fromWei(eventPrice.toString(), 'ether') : ''}Ξ
+        </p>
+    </div>
+    <div>
+        <p className="font-bold text-base">Duración:</p>
+        <p className="text-gray-700 text-base font-bold">
+          <EventDuration duration={eventDuration} />
+        </p>
+    </div>
+</div>
+    <div className="flex justify-center my-2">
+      <p className="text-gray-700 text-base align-itmes font-bold">
+        Contador: {eventCounter}/{eventSupply}
+      </p>
+    </div>
+  </div>
+  <div className="py-4 border-b mb-4 border-black"></div>
+  <div className="text-center flex flex-col items-center">
+  <button
+    className={`bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isEventOpen ? '' : 'opacity-50 cursor-not-allowed'}`}
+    onClick={isEventOpen ? mintEventToken : null}
+>
+    {isEventOpen ? 'ACUÑA NFT!' : 'CERRADO!'}
+</button>
+  </div>
+  <div className="flex justify-between p-2">
+    <button onClick={() => alert('Esta es la carta de evento. Aqui se muestra información relevante del evento.')}>ℹ️</button>
+    {isAddressMatch && (
+    <button onClick={() => router.push('/neweventregister')} className="text-blue-500 hover:text-blue-700 cursor-pointer">
+      ➕
+    </button>
+  )}
+  </div>
+</div>
           ) : (
             <div className="flex justify-end mt-4 sm:mt-0 ml-2 sm:ml-4">
               <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded" onClick={() => router.push('/eventregister')}>
@@ -278,11 +341,11 @@ const Profile = ({ id }) => {
             </div>
           )}
         </div>
+{/* Conditionally render Withdraw component if account matches id */}
+{address && address.toLowerCase() === id.toLowerCase() && <Withdraw id={id} />}
+        </>
       );
-         
-      
-           
-           
+          
 };
 
 // Export the Profile component

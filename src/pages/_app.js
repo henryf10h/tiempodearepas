@@ -13,13 +13,16 @@ import { mainnet, polygon, optimism, arbitrum, optimismGoerli, sepolia } from 'w
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 
+// console.log('ALCHEMY_ID:', process.env.ALCHEMY_ID);
+
 const { chains, publicClient,  webSocketPublicClient } = configureChains(
-  [mainnet, polygon, optimism, arbitrum,optimismGoerli, sepolia],
+  [sepolia, mainnet, polygon, optimism, arbitrum,optimismGoerli],
   [
-    // alchemyProvider({ apiKey: process.env.ALCHEMY_ID }),
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID }),
     publicProvider()
   ]
 );
+
 const { connectors } = getDefaultWallets({
   appName: 'My RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
@@ -34,7 +37,7 @@ const wagmiConfig = createConfig({
 export default function App({ Component, pageProps }) {
   return (
       <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider chains={chains} initialChain={sepolia}>
       <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
