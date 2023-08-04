@@ -11,7 +11,7 @@ Siga estos pasos para ejecutar el proyecto en su máquina local:
 Primero, necesita clonar el repositorio en su máquina local. Puede hacerlo usando el siguiente comando:
 
 ```bash
-git clone [https://github.com/henryf10h/tiempodearepas]
+git clone https://github.com/henryf10h/tiempodearepas
 ```
 
 ### 2. Navegar al Directorio del Proyecto
