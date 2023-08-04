@@ -4,9 +4,6 @@ import { useMediaQuery } from 'react-responsive';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router'; // Import the useRouter hook
 import { getAccount } from '@wagmi/core';
-// import { connect } from '@wagmi/core'
-// import { sepolia } from '@wagmi/core/chains'
-// import { InjectedConnector } from '@wagmi/core/connectors/injected'
 
 const Navbar = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -14,18 +11,6 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter(); // Initialize the useRouter hook
   const [addressInput, setAddressInput] = useState(''); // State to store the user's input
-  // const connectWallet = async () => {
-  //   try {
-  //     const result = await connect({
-  //       connector: new InjectedConnector(),
-  //     });
-  //     console.log(result)
-  //     // Do something with the result, e.g., update a state variable
-  //   } catch (error) {
-  //     console.error("Error connecting to wallet:", error);
-  //     // Handle the error accordingly
-  //   }
-  // };
 
   const goToProfile = () => {
     if (addressInput) {
@@ -75,14 +60,14 @@ const Navbar = () => {
             placeholder="e.g. 0xD5C...9331"
             className="border rounded p-1"
           />
-          <button onClick={goToProfile} className="ml-2 text-lg font-semibold bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"> {/* Updated styling */}
+          <button onClick={goToProfile} className="ml-2 text-lg font-semibold bg-green-500 hover:bg-green-700 text-dark py-2 px-4 rounded focus:outline-none focus:shadow-outline"> {/* Updated styling */}
             Visitar Amigos!
           </button>
         </div>
           )}
         </div>
         {isLargerScreen ? (
-          <ConnectButton className="text-lg font-semibold" />
+          <ConnectButton className="text-lg font-semibold" label="Conectar" />
         ) : (
           <div className="relative">
             <button onClick={toggleDropdown} className="text-2xl hover:text-gray-700">&#9776;</button>

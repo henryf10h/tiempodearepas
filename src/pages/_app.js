@@ -37,7 +37,7 @@ const wagmiConfig = createConfig({
 export default function App({ Component, pageProps }) {
   return (
       <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains} initialChain={sepolia}>
+      <RainbowKitProvider chains={chains} initialChain={sepolia} theme={darkTheme({...darkTheme.accentColors.green})}>
       <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>

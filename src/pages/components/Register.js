@@ -146,7 +146,7 @@ const Register = () => {
       }
 
       const result = await readContract({
-        address: '0xE12C657b5F6A6bc7ff862764FFFB73c9C46397dD',
+        address: '0xF84697716aE761772ee3C61A1D7840ECFDE9eC4a',
         abi: abi,
         functionName: 'factories',
         args: [address],
@@ -216,7 +216,7 @@ const Register = () => {
  
   // Prepare the call to createUserFactory
   const { request: requestCreateUserFactory } = await prepareWriteContract({
-    address: '0xE12C657b5F6A6bc7ff862764FFFB73c9C46397dD',
+    address: '0xF84697716aE761772ee3C61A1D7840ECFDE9eC4a',
     abi: abi,
     functionName: 'createUserFactory',
     chainId: 11155111,
@@ -234,7 +234,7 @@ const Register = () => {
 
     // Call factories function to get the new Factory contract address
     const factoryContractAddress = await readContract({
-      address: '0xE12C657b5F6A6bc7ff862764FFFB73c9C46397dD',
+      address: '0xF84697716aE761772ee3C61A1D7840ECFDE9eC4a',
       abi: abi,
       functionName: 'factories',
       args: [address],

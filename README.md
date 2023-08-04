@@ -1,38 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Tiempo De Arepas
 
-## Getting Started
+Bienvenido al proyecto "Tiempo De Arepas". Este es un proyecto construido con Next.js que facilita la gestión y visualización de NFTs. 
 
-First, run the development server:
+## Instalación
+
+Siga estos pasos para ejecutar el proyecto en su máquina local:
+
+### 1. Clonar el Repositorio
+
+Primero, necesita clonar el repositorio en su máquina local. Puede hacerlo usando el siguiente comando:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+git clone [https://github.com/henryf10h/tiempodearepas]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Navegar al Directorio del Proyecto
+Una vez clonado el repositorio, navegue al directorio del proyecto usando:
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+```bash
+cd tiempos-de-arepa
+```
+### 3. Instalar las Dependencias
+Antes de ejecutar el proyecto, debe instalar las dependencias necesarias. Utilice el siguiente comando:
+```bash
+npm install
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+### 4. Ejecutar el Proyecto
+Una vez instaladas las dependencias, puede iniciar el servidor de desarrollo ejecutando:
+```bash
+npm run dev
+```
+El proyecto ahora debería estar corriendo en http://localhost:3000. Abra esta URL en su navegador para explorar el proyecto.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### Contribución
+Si desea contribuir al proyecto, por favor, háganoslo saber. Puede abrir un "issue" o enviar una "pull request".
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Licencia
+Por favor, consulte el archivo LICENSE para obtener información detallada sobre la licencia del proyecto.
 
-## Learn More
+### Contacto
+Si tiene alguna pregunta o necesita ayuda adicional, no dude en contactarnos.
 
-To learn more about Next.js, take a look at the following resources:
+¡Disfrute explorando "Tiempo De Arepas"!
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### PD
+Por supuesto, asegúrate de modificar cualquier parte que sea específica a tu proyecto, como la URL del repositorio o la descripción del proyecto. También, puedes añadir secciones adicionales si lo necesitas, como "Características", "Tecnologías Utilizadas", "Créditos", etc.

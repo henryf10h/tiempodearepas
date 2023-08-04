@@ -21,7 +21,7 @@ const Visit = () => {
       {isDisconnected ? (
         <ConnectButton />
       ) : (
-        <span className="text-2xl text-green-500 font-bold animate-pulse">Connecting...</span>
+        <span className="text-2xl text-green-500 font-bold animate-pulse">Conectando...</span>
       )}
     </div>
   );

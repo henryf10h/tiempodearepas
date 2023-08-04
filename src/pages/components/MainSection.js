@@ -15,7 +15,7 @@ const MainSection = () => {
           <span className="text-green-500 text-2xl font-bold">Recuerdos de Arepas</span>
         </p>
         <Link href="/register" legacyBehavior>
-          <a className="mt-6 px-4 py-2 bg-orange-500 rounded text-white hover:bg-orange-600 w-48 sm:w-auto">IR A/CREAR PERFIL</a>
+          <a className="mt-6 px-4 py-2 bg-orange-500 rounded text-white hover:bg-orange-600 w-48 sm:w-auto font-bold">CREAR PERFIL</a>
         </Link>
       </div>
     </div>
