@@ -1,4 +1,4 @@
-import Visit from './components/visit';
+import Visit from '../pages/components/Visit';
 import Navbar from './components/Navbar';
 
 export default function RegisterPage() {
